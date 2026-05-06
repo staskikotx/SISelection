@@ -1,0 +1,5 @@
+data/bird/
+data/provenance.json
+__pycache__
+data/reports/
+data/candidates/

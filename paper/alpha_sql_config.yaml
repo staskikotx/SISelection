@@ -1,0 +1,16 @@
+tasks_file_path: "/home/stakot/Alpha-SQL/data/preprocessed/bird/dev/tasks.pkl"
+subset_file_path: null
+db_root_dir: "/home/stakot/Alpha-SQL/data/bird/dev_databases"
+n_processes: 16
+max_rollout_steps: 24 # Use values 2, 5, 11 and 24 for reproducing results
+max_depth: 16
+exploration_constant: 1.414
+save_root_dir: "results/Qwen3rollout24" # Change it for different number of rollouts
+mcts_model_kwargs:
+    model: "/data2/x00499439/Alpha-SQL/models/Qwen3-Coder-30B-A3B-Instruct"
+    n: 2
+    top_p: 0.95
+    max_tokens: 4096
+    temperature: 0.6
+    n_strategy: "single"
+reward_model_kwargs: null

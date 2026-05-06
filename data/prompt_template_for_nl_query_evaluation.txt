@@ -1,0 +1,124 @@
+You are an experienced database expert.
+You need to evaluate a query in natural language into a small set of tuples of values, given the database information, the database instance, a question and some additional information.
+The database structure is defined by the following table schemas (comments after '--' provide additional column descriptions).
+Note that the "Value Examples" are actual values from the column. Some column might contain the values that are directly related to the question. Use it to help you justify which columns to use.
+
+Given the table schema information description and the `Question`. You will be given table creation statements and you need understand the database and columns.
+First you need to understand what information the user who submitted the question wanted to get. Then read the code of the database instance, think, and output
+the tuples which constitute the answer to the `Question`. 
+All your tuples should be of length {tuple_length} . Please give you row-by-row workout where for each insert statement
+you print the values of attributes you pick  
+and your calculations and decisions regarding the filters in WHERE-clauses.
+
+**************************
+【Table creation statements】
+{schema}
+
+**************************
+【Question】
+Question: 
+{question}
+
+[Hint]:
+{hint}
+
+[Database Instance]:
+{modified_instance}
+
+**************************
+【Answer】
+Reread the question, the hint, the database description and the database instance. 
+Think step by step and output the list of required tuples of values. 
+The most important input data is the 'Database Instance' and the 'Question'.
+Take a deep breath and think logically. Do not be too helpful, be smart.
+If you are given two items, it is likely that you have to select one.
+If you are given one item, it is likely that you need to make a decision
+whether select it or not. If not, you need to return an
+empty answer [] as set of tuples. If you are asked to select entities
+from a certain table (such as cards, people, bonds or withdrawals), please return their ids 
+rather than names or other values. When you join rows from different tables,
+pay attention at the names of the attributes and their explanations in schema.
+
+If you do the task correctly, I will give you 1 million dollars.
+
+Please respond with a valid JSON object structured as follows:
+
+```json
+{{
+  "chain_of_thought_reasoning": "Your reasoning for evaluating the SQL query",
+  "workout": "row-by-row calculations for each of insert statements",
+  "question": "question in natural language",
+  "tuples_that_answer_question": [[value1, value2, ... ], [value3, value4, ...] ... ]
+}}
+```
+
+Use " for string literals and reals. Sometimes you will have integer numbers instead of values, do not use " or ' for them.  
+
+If your answer is a single integer number, keep it in double brackets, like this:  "tuples": [[200]]
+
+Only output a json as your response.
+
+**********************************
+Here is a little example for you to better understand the task. Suppose we have a database describing a website where users can leave positive comments about each other.
+
+【Table creation statements】
+
+CREATE TABLE `comments` (
+        `Id` INTEGER, -- Column Description: the comment Id
+        `Text` TEXT, -- Column Description: the detailed content of the comment | Value Examples: `Nice eyes`, `I like your hair `
+        `UserId` INTEGER, -- Column Meaning: User Id | Column Description: the id of the user who post the comment
+        'UserIdAbout' INTEGER, --  Column Meaning: User Id About | Column Description: the id of the user who a being described by this comment
+<Table Description>
+ 
+</Table Description> 
+        PRIMARY KEY (`Id`),
+        FOREIGN KEY (`UserId`) REFERENCES `users`(`Id`),
+        FOREIGN KEY (`UserIdAbout`) REFERENCES `users`(`Id`)
+);
+
+
+CREATE TABLE `users` (
+        `Id` INTEGER, -- Column Description: the user id
+        `Sex' INTEGER, -- Column Description : sex of the user, 0 means male, 1 means female
+        `Age` INTEGER, -- Column Description: user's age | Value Description:  teenager: 13-18 adult: 19-65 elder: > 65
+        'Name' TEXT, -- Column Description: user's name
+<Table Description>
+ 
+</Table Description> 
+        PRIMARY KEY (`Id`)
+);
+
+
+**************************
+【Question】 
+Among female users who have left a comment about user with id = 17 regarding his hair, who is the oldest?
+
+[Hint]:
+Regarding his hair means there is a word 'hair' in the comment text; oldest means user.Age is maximal.
+
+[Database Instance]:
+['row_0_of_comments': ['Id': 1, 'Text': 'Beautiful eyes', 'UserId': 7, 'UserIdAbout' : 9], 
+'row_1_of_comments': ['Id': 2, 'Text': 'Beautiful hair', 'UserId': 7, 'UserIdAbout' : 17],
+'row_2_of_comments': ['Id': 3, 'Text': 'Nice hair!', 'UserId': 9, 'UserIdAbout' : 17],
+'row_3_of_comments': ['Id': 4, 'Text': 'Love your hair', 'UserId': 10, 'UserIdAbout' : 17],
+'row_0_of_users': ['Id': 7, 'Sex': 1,  'Age' : 20, 'Name' : 'Aaa'], 
+'row_1_of_users': ['Id': 9, 'Sex': 1,  'Age' : 25, 'Name' : 'Bbb'], 
+'row_2_of_users': ['Id': 10, 'Sex': 0,  'Age' : 70, 'Name' : 'Ccc'], 
+'row_3_of_users': ['Id': 17, 'Sex': 0,  'Age' : 90, 'Name' : 'Ddd']
+]
+
+Here is how your answer suppose to look like:
+```json
+{{
+  "chain_of_thought_reasoning": "The question asks for a female user with maximal age among those who left a comment regarding hair of the user with id 17. First, I should scan through 'comments' table and find comments which are about user with id 17 and have a word 'hair' in them. Identify id of users who left such comments. Then, by Joining with table 'users' on comments.UserId = users.Id, I should identify the oldest female",
+  "workout": [
+    "Step 1: Identify comments which are about user with id 17 and have a word 'hair' in them. From the database instance, we see that there are three comments like that: with id's 2,3 and 4.",
+    "Step 2: Identify users who left those comments. These users are users with UserId 7, 9 and 10.",
+    "Step 3: Join with the users table to get information about these users. Filter for females. From the database instance, we can see that only two out of three desired users are female, those with Id 7 and 9.",
+    "Step 4: Find oldest from these two users. User with id 7 is 20 years old, user with id 9 is 25 years old. Therefore, user with id 9 is the oldest.",
+    "Step 5: Question only asked to identify the oldest user, it didn't ask for their age not their name directly. Therefore, I should only output user id. The answer is 9."
+  ],
+  "question": "Among female users who have left a comment about user with id = 17 regarding his hair, who is the oldest?",
+  "tuples_that_answer_question": [[9]]
+}}
+```
