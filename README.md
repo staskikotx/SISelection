@@ -1,4 +1,4 @@
-# SQLVerification
+# SISelection
 
 The code for NL2SQL candidate selection based on small separating instances. To find out which on of the SQL-candidates is right we will hold duels between them.
 
